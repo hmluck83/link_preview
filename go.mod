@@ -1,4 +1,4 @@
-module hmluck83/link_preview
+module github.com/hmluck83/link_preview
 
 go 1.20
 
