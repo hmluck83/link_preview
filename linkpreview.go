@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"golang.org/x/net/html/charset"
 )
 
 type LinkPreview struct {
@@ -55,7 +56,13 @@ func GetLinkPreview(ctx context.Context, previewUrl string) (*LinkPreview, error
 		return nil, &ErrNonSupportedContentType{contentType: contentType}
 	}
 
-	gq, err := goquery.NewDocumentFromReader(r.Body)
+	bodyReader, err := charset.NewReader(r.Body, c)
+
+	if err != nil {
+		return nil, err
+	}
+
+	gq, err := goquery.NewDocumentFromReader(bodyReader)
 
 	if err != nil {
 		return nil, err
@@ -65,7 +72,7 @@ func GetLinkPreview(ctx context.Context, previewUrl string) (*LinkPreview, error
 	description := getDescription(gq)
 	image := getImage(gq)	
 
-	if image != "" && !(strings.HasPrefix("http://", image) || strings.HasPrefix("https://", image)) {
+	if image != "" && !(strings.HasPrefix(image, "http://") || strings.HasPrefix(image, "https://")) {
 		parsedURL, _ := url.Parse(previewUrl)
 
 		joinedURL := url.URL{
